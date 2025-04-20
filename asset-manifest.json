@@ -1,13 +1,16 @@
 {
   "files": {
-    "main.css": "/tabata-timer/static/css/main.e6c13ad2.css",
-    "main.js": "/tabata-timer/static/js/main.0069dc6c.js",
+    "main.css": "/tabata-timer/static/css/main.4234a290.css",
+    "main.js": "/tabata-timer/static/js/main.41d52871.js",
+    "static/media/stop-sound.mp3": "/tabata-timer/static/media/stop-sound.a7be1b5d43168a3d8bed.mp3",
+    "static/media/prepare-sound.mp3": "/tabata-timer/static/media/prepare-sound.60b7d438e2eec241110b.mp3",
+    "static/media/start-sound.mp3": "/tabata-timer/static/media/start-sound.f4cc3a8cbb52fb4470a1.mp3",
     "index.html": "/tabata-timer/index.html",
-    "main.e6c13ad2.css.map": "/tabata-timer/static/css/main.e6c13ad2.css.map",
-    "main.0069dc6c.js.map": "/tabata-timer/static/js/main.0069dc6c.js.map"
+    "main.4234a290.css.map": "/tabata-timer/static/css/main.4234a290.css.map",
+    "main.41d52871.js.map": "/tabata-timer/static/js/main.41d52871.js.map"
   },
   "entrypoints": [
-    "static/css/main.e6c13ad2.css",
-    "static/js/main.0069dc6c.js"
+    "static/css/main.4234a290.css",
+    "static/js/main.41d52871.js"
   ]
 }
