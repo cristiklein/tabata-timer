@@ -28,17 +28,6 @@ function initStages(): Stage[] {
   return stages;
 }
 
-function getStageIndex(stages: Stage[], elapsedTimeMs: number) {
-  let endTimeMs = 0;
-  for (let i: number = 0; i < stages.length; i++) {
-    endTimeMs += stages[i].durationMs;
-    if (endTimeMs > elapsedTimeMs)
-      return i;
-  }
-
-  return -1;
-}
-
 const StageList = styled.ul`
   padding: 0;
   margin: 0;
@@ -80,82 +69,65 @@ const Timer = styled.div`
   margin: 10px 0;
 `;
 
-function getPrevNextStage(
-  stages: Stage[],
-  prevMs: number,
-  nextMs: number,
-  offsetMs: number,
-): [ number, number ] {
-  const prevIndex = getStageIndex(stages, prevMs - offsetMs);
-  const nextIndex = getStageIndex(stages, nextMs - offsetMs);
-
-  return [ prevIndex, nextIndex ];
+class TimerState {
+  elapsedTimeMs = 0;
+  stageIndex = -1;
+  stageEndTimeMs = 0;
 }
 
 function shouldAudioStart(
   stages: Stage[],
-  prevMs: number,
-  nextMs: number,
+  prev: TimerState,
+  next: TimerState,
 ): boolean {
-  const [ prevIndex, nextIndex ] = getPrevNextStage(
-    stages,
-    prevMs,
-    nextMs,
-    0,
-  );
-
-  if (nextIndex === -1)
+  if (prev.stageIndex === next.stageIndex)
     return false;
 
-  if (prevIndex === nextIndex)
+  if (next.stageIndex >= stages.length)
     return false;
 
-  return (stages[nextIndex].name === "Work");
+  if (stages[next.stageIndex].name !== "Work")
+    return false;
+
+  return true;
 }
 
 function shouldAudioStop(
   stages: Stage[],
-  prevMs: number,
-  nextMs: number,
+  prev: TimerState,
+  next: TimerState,
 ): boolean {
-  const [ prevIndex, nextIndex ] = getPrevNextStage(
-    stages,
-    prevMs,
-    nextMs,
-    0,
-  );
-
-  if (prevIndex === -1)
+  if (prev.stageIndex === next.stageIndex)
     return false;
 
-  if (prevIndex === nextIndex)
+  if (prev.stageIndex < 0)
     return false;
 
-  return (stages[prevIndex].name === "Work");
+  if (stages[prev.stageIndex].name !== "Work")
+    return false;
+
+  return true;
 }
 
 function shouldAudioPrepare(
   stages: Stage[],
-  prevMs: number,
-  nextMs: number,
+  prev: TimerState,
+  next: TimerState,
 ): boolean {
-  for (let i : number = 1; i <= 3; i++) {
-    const [ prevIndex, nextIndex ] = getPrevNextStage(
-      stages,
-      prevMs,
-      nextMs,
-      -1000*i,
-    );
+  if (prev.stageIndex < 0 || stages.length <= prev.stageIndex)
+    return false;
 
-    if (nextIndex === -1)
-      continue;
+  if (stages[prev.stageIndex].name === "Work")
+    return false;
 
-    if (prevIndex === nextIndex)
-      continue;
-
-    if (stages[nextIndex].name === "Work")
-      return true;
-  }
+  const prevTimeToEnd = prev.stageEndTimeMs - prev.elapsedTimeMs;
+  const nextTimeToEnd = next.stageEndTimeMs - next.elapsedTimeMs;
+  if (prevTimeToEnd > 1000 && nextTimeToEnd <= 1000)
+    return true;
+  if (prevTimeToEnd > 2000 && nextTimeToEnd <= 2000)
+    return true;
+  if (prevTimeToEnd > 3000 && nextTimeToEnd <= 3000)
+    return true;
 
   return false;
 }
@@ -163,21 +135,46 @@ function shouldAudioPrepare(
 const App: React.FC = () => {
   const [stages] = useState<Stage[]>(initStages());
   const [isRunning, setIsRunning] = useState(false);
-  const [elapsedTimeMs, setElapsedTimeMs] = useState(0);
-  const lastUpdatedRef = useRef<number>(Date.now());
+  const [timerState, setTimerState] = useState<TimerState>(new TimerState());
+  const lastUpdatedRef = useRef<number>(0);
 
   useEffect(() => {
     let timerId: NodeJS.Timeout;
 
     if (isRunning) {
       console.log('Timer running');
+
+      lastUpdatedRef.current = Date.now();
+
       timerId = setInterval(() => {
         const now = Date.now();
         const delta = now - lastUpdatedRef.current;
-        setElapsedTimeMs((prev) => {
-          const next = prev + delta;
+        setTimerState((prev) => {
+          const next = new TimerState();
 
-          const nextStageIndex = getStageIndex(stages, next);
+          /* Have we been restarted after the last stage? Reset! */
+          if (prev.stageIndex >= stages.length) {
+            prev = new TimerState();
+          }
+
+          next.elapsedTimeMs = prev.elapsedTimeMs + delta;
+          next.stageIndex = prev.stageIndex;
+          next.stageEndTimeMs = prev.stageEndTimeMs;
+
+          /* Check if we went over a stage */
+          if (next.elapsedTimeMs >= prev.stageEndTimeMs) {
+            next.stageIndex += 1;
+
+            /* Check if we reached the end */
+            if (next.stageIndex >= stages.length) {
+              setIsRunning(false);
+              next.elapsedTimeMs = next.stageEndTimeMs;
+              next.stageEndTimeMs = Infinity;
+            }
+            else {
+              next.stageEndTimeMs += stages[next.stageIndex].durationMs;
+            }
+          }
 
           if (shouldAudioStart(stages, prev, next)) {
             startAudio.play();
@@ -189,10 +186,6 @@ const App: React.FC = () => {
             stopAudio.play();
           }
 
-          if (nextStageIndex === -1) {
-            setIsRunning(false);
-            return Math.floor(next / 1000) * 1000;
-          }
           return next;
         });
         lastUpdatedRef.current = now;
@@ -211,7 +204,7 @@ const App: React.FC = () => {
 
   const handleReset = () => {
     setIsRunning(false);
-    setElapsedTimeMs(0);
+    setTimerState(new TimerState());
   };
 
   return (
@@ -219,16 +212,17 @@ const App: React.FC = () => {
       <Title>Tabata Timer</Title>
       <Button onClick={handleStartPauseResume}>{
         isRunning ? "Pause" : (
-          (elapsedTimeMs === 0) ? "Start" : "Resume"
+          (timerState.stageIndex < 0) ||
+          (timerState.stageIndex >= stages.length) ? "Start" : "Resume"
         )
       }</Button>
       <Button onClick={handleReset}>Reset</Button>
-      <Timer>{ formatDuration(elapsedTimeMs) }</Timer>
+      <Timer>{ formatDuration(timerState.elapsedTimeMs) }</Timer>
       <StageList>
         {stages.map((stage, i) => (
           <StageItem
             key={i}
-            $active={i === getStageIndex(stages, elapsedTimeMs)}
+            $active={i === timerState.stageIndex}
           >
             <StageName>{i+1}</StageName>
             <StageName>{stage.name}</StageName>
