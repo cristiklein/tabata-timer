@@ -31,6 +31,7 @@ function initStages(): Stage[] {
 const StageList = styled.ul`
   padding: 0;
   margin: 0;
+  font-size: 32px;
 `;
 
 const StageItem = styled.li<{ $active: boolean }>`
@@ -54,19 +55,26 @@ const StageDuration = styled.span`
 const Button = styled.button`
   width: 50%;
   min-height: 50px;
+  font-size: 20px;
 `;
 
 const Title = styled.h1`
   margin-block-start: 5px;
   margin-block-end: 5px;
+  text-align: center;
 `;
 
 const Timer = styled.div`
-  font-size: 30px;
+  font-size: 50px;
   font-family: monospace;
   text-align: center;
 
   margin: 10px 0;
+`;
+
+const VerticalScrollContainer = styled.div<{ $height: string }>`
+  overflow-y: scroll;
+  height: ${props => props.$height};
 `;
 
 class TimerState {
@@ -193,6 +201,12 @@ const App: React.FC = () => {
           }
           if (shouldAudioPrepare(stages, prev, next)) {
             prepareAudio.play();
+            const i = next.stageIndex;
+            const el = document.getElementById('stage-'+i);
+            if (el)
+              el.scrollIntoView();
+            else
+              console.log("Couldn't scroll into view");
           }
           if (shouldAudioStop(stages, prev, next)) {
             stopAudio.play();
@@ -229,12 +243,15 @@ const App: React.FC = () => {
         )
       }</Button>
       <Button onClick={handleReset}>Reset</Button>
-      <Timer>{ formatDuration(timerState.elapsedTimeMs) }</Timer>
+      <Timer>{ (stages[timerState.stageIndex] || { name: "Click start" }).name }</Timer>
+      <Timer>{ formatDuration(timerState.stageEndTimeMs - timerState.elapsedTimeMs) }</Timer>
+      <VerticalScrollContainer $height="450px">
       <StageList>
         {stages.map((stage, i) => (
           <StageItem
             key={i}
             $active={i === timerState.stageIndex}
+            id={"stage-"+(i)}
           >
             <StageName>{i+1}</StageName>
             <StageName>{stage.name}</StageName>
@@ -242,6 +259,7 @@ const App: React.FC = () => {
           </StageItem>
         ))}
       </StageList>
+      </VerticalScrollContainer>
     </div>
   );
 }
