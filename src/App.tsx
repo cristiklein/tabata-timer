@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 
 import styled from 'styled-components';
 
+import { formatDuration } from './utils';
+
 export interface Stage {
   name: string;
   duration: number; // Duration in seconds
@@ -65,13 +67,47 @@ const Timer = styled.div`
 const App: React.FC = () => {
   const [stages, setStages] = useState<Stage[]>(initStages());
   const [currentStageIndex, setCurrentStageIndex] = useState<number>(0);
+  const [isRunning, setIsRunning] = useState(false);
+  const [elapsedTime, setElapsedTime] = useState(0);
+
+  useEffect(() => {
+    let timerId: NodeJS.Timeout;
+    let lastUpdated: number;
+
+    if (isRunning) {
+      console.log('Timer running');
+      lastUpdated = Date.now();
+      timerId = setInterval(() => {
+        setElapsedTime((elapsedTime) => elapsedTime + Date.now() - lastUpdated);
+        lastUpdated = Date.now();
+      }, 1000/60); // 60Hz
+    }
+
+    return () => {
+      console.log('Timer cleared');
+      clearInterval(timerId);
+    };
+  }, [isRunning]);
+
+  const handleStartPauseResume = () => {
+    setIsRunning(!isRunning);
+  };
+
+  const handleReset = () => {
+    setIsRunning(false);
+    setElapsedTime(0);
+  };
 
   return (
     <div>
       <Title>Tabata Timer</Title>
-      <Button>Start</Button>
-      <Button>Reset</Button>
-      <Timer>00:00:00</Timer>
+      <Button onClick={handleStartPauseResume}>{
+        isRunning ? "Pause" : (
+          (elapsedTime === 0) ? "Start" : "Resume"
+        )
+      }</Button>
+      <Button onClick={handleReset}>Reset</Button>
+      <Timer>{ formatDuration(elapsedTime) }</Timer>
       <StageList>
         {stages.map((stage, index) => (
           <StageItem
