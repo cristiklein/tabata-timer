@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/tabata-timer/static/css/main.e6c13ad2.css",
+    "main.js": "/tabata-timer/static/js/main.0069dc6c.js",
+    "index.html": "/tabata-timer/index.html",
+    "main.e6c13ad2.css.map": "/tabata-timer/static/css/main.e6c13ad2.css.map",
+    "main.0069dc6c.js.map": "/tabata-timer/static/js/main.0069dc6c.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e6c13ad2.css",
+    "static/js/main.0069dc6c.js"
+  ]
+}
