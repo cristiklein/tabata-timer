@@ -24,3 +24,6 @@ yarn-error.log*
 
 # nodeenv
 .nodeenv
+
+# vim
+*.swp
