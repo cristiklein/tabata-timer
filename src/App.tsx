@@ -22,7 +22,7 @@ function initStages(): Stage[] {
 
   for (let cycle: number = 0; cycle < 8; cycle++) {
     stages.push({ name: 'Prep', durationMs: 10000 });
-    stages.push({ name: 'Work', durationMs: 10000 });
+    stages.push({ name: 'Work', durationMs: 30000 });
   }
 
   return stages;
