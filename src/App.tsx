@@ -73,7 +73,7 @@ const Title = styled.h1`
 
 const Timer = styled.div`
   font-size: 30px;
-  font-family: fixed-width;
+  font-family: monospace;
   text-align: center;
 
   margin: 10px 0;
