@@ -6,18 +6,34 @@ import { formatDuration } from './utils';
 
 export interface Stage {
   name: string;
-  duration: number; // Duration in seconds
+  durationMs: number;
+  startTimeMs?: number;
+  endTimeMs?: number;
 }
 
 function initStages(): Stage[] {
   const stages: Stage[] = [];
 
   for (let cycle: number = 0; cycle < 8; cycle++) {
-    stages.push({ name: 'Prep', duration: 10 });
-    stages.push({ name: 'Work', duration: 30 });
+    stages.push({ name: 'Prep', durationMs: 10000 });
+    stages.push({ name: 'Work', durationMs: 30000 });
   }
 
   return stages;
+}
+
+function withStageStartEnd(stages: Stage[]) {
+  const outStages: Stage[] = [];
+
+  let startTimeMs = 0;
+  let endTimeMs = 0;
+  for (let i: number = 0; i < stages.length; i++) {
+    endTimeMs += stages[i].durationMs;
+    outStages.push({startTimeMs, endTimeMs, ...stages[i]});
+    startTimeMs = endTimeMs;
+  }
+
+  return outStages;
 }
 
 const StageList = styled.ul`
@@ -25,17 +41,13 @@ const StageList = styled.ul`
   margin: 0;
 `;
 
-interface StageItemProps {
-  active: boolean;
-}
-
-const StageItem = styled.li<StageItemProps>`
+const StageItem = styled.li<{ $active: boolean }>`
   display: flex;
   justify-content: space-between;
   padding: 8px 12px;
   border-bottom: 1px solid #ddd;
-  background-color: ${({ active }) => (active ? '#f0f8ff' : 'transparent')};
-  font-weight: ${({ active }) => (active ? 'bold' : 'normal')};
+  background-color: ${({ $active }) => ($active ? '#f0f8ff' : 'transparent')};
+  font-weight: ${({ $active }) => ($active ? 'bold' : 'normal')};
 `;
 
 const StageName = styled.span`
@@ -65,21 +77,21 @@ const Timer = styled.div`
 `;
 
 const App: React.FC = () => {
-  const [stages, setStages] = useState<Stage[]>(initStages());
-  const [currentStageIndex, setCurrentStageIndex] = useState<number>(0);
+  const [stages] = useState<Stage[]>(withStageStartEnd(initStages()));
   const [isRunning, setIsRunning] = useState(false);
-  const [elapsedTime, setElapsedTime] = useState(0);
+  const [elapsedTimeMs, setElapsedTimeMs] = useState(0);
+  const lastUpdatedRef = useRef<number>(Date.now());
 
   useEffect(() => {
     let timerId: NodeJS.Timeout;
-    let lastUpdated: number;
 
     if (isRunning) {
       console.log('Timer running');
-      lastUpdated = Date.now();
       timerId = setInterval(() => {
-        setElapsedTime((elapsedTime) => elapsedTime + Date.now() - lastUpdated);
-        lastUpdated = Date.now();
+        const now = Date.now();
+        const delta = now - lastUpdatedRef.current;
+        setElapsedTimeMs((prev) => prev + delta);
+        lastUpdatedRef.current = now;
       }, 1000/60); // 60Hz
     }
 
@@ -95,7 +107,7 @@ const App: React.FC = () => {
 
   const handleReset = () => {
     setIsRunning(false);
-    setElapsedTime(0);
+    setElapsedTimeMs(0);
   };
 
   return (
@@ -103,20 +115,20 @@ const App: React.FC = () => {
       <Title>Tabata Timer</Title>
       <Button onClick={handleStartPauseResume}>{
         isRunning ? "Pause" : (
-          (elapsedTime === 0) ? "Start" : "Resume"
+          (elapsedTimeMs === 0) ? "Start" : "Resume"
         )
       }</Button>
       <Button onClick={handleReset}>Reset</Button>
-      <Timer>{ formatDuration(elapsedTime) }</Timer>
+      <Timer>{ formatDuration(elapsedTimeMs) }</Timer>
       <StageList>
-        {stages.map((stage, index) => (
+        {stages.map((stage, i) => (
           <StageItem
-            key={index}
-            active={index === currentStageIndex}
+            key={i}
+            $active={stages[i].startTimeMs! <= elapsedTimeMs && elapsedTimeMs < stages[i].endTimeMs!}
           >
-            <StageName>{index+1}</StageName>
+            <StageName>{i+1}</StageName>
             <StageName>{stage.name}</StageName>
-            <StageDuration>{stage.duration}s</StageDuration>
+            <StageDuration>{stage.durationMs / 1000}s</StageDuration>
           </StageItem>
         ))}
       </StageList>
