@@ -73,6 +73,39 @@ class TimerState {
   elapsedTimeMs = 0;
   stageIndex = -1;
   stageEndTimeMs = 0;
+  reachedEnd = false;
+
+  /* Return a new TimerState from the current state */
+  next(stages: Stage[], deltaMs: number): TimerState {
+    let prev: TimerState = this;
+    const next = new TimerState();
+
+    /* Have we been restarted after the last stage? Reset! */
+    if (prev.stageIndex >= stages.length) {
+      prev = new TimerState();
+    }
+
+    next.elapsedTimeMs = prev.elapsedTimeMs + deltaMs;
+    next.stageIndex = prev.stageIndex;
+    next.stageEndTimeMs = prev.stageEndTimeMs;
+
+    /* Check if we went over a stage */
+    if (next.elapsedTimeMs >= prev.stageEndTimeMs) {
+      next.stageIndex += 1;
+
+      /* Check if we reached the end */
+      if (next.stageIndex >= stages.length) {
+        next.reachedEnd = true;
+        next.elapsedTimeMs = next.stageEndTimeMs;
+        next.stageEndTimeMs = Infinity;
+      }
+      else {
+        next.stageEndTimeMs += stages[next.stageIndex].durationMs;
+      }
+    }
+
+    return next;
+  }
 }
 
 function shouldAudioStart(
@@ -100,7 +133,7 @@ function shouldAudioStop(
   if (prev.stageIndex === next.stageIndex)
     return false;
 
-  if (prev.stageIndex < 0)
+  if (prev.stageIndex < 0 || stages.length <= prev.stageIndex)
     return false;
 
   if (stages[prev.stageIndex].name !== "Work")
@@ -150,31 +183,10 @@ const App: React.FC = () => {
         const now = Date.now();
         const delta = now - lastUpdatedRef.current;
         setTimerState((prev) => {
-          const next = new TimerState();
+          const next = prev.next(stages, delta);
 
-          /* Have we been restarted after the last stage? Reset! */
-          if (prev.stageIndex >= stages.length) {
-            prev = new TimerState();
-          }
-
-          next.elapsedTimeMs = prev.elapsedTimeMs + delta;
-          next.stageIndex = prev.stageIndex;
-          next.stageEndTimeMs = prev.stageEndTimeMs;
-
-          /* Check if we went over a stage */
-          if (next.elapsedTimeMs >= prev.stageEndTimeMs) {
-            next.stageIndex += 1;
-
-            /* Check if we reached the end */
-            if (next.stageIndex >= stages.length) {
-              setIsRunning(false);
-              next.elapsedTimeMs = next.stageEndTimeMs;
-              next.stageEndTimeMs = Infinity;
-            }
-            else {
-              next.stageEndTimeMs += stages[next.stageIndex].durationMs;
-            }
-          }
+          if (next.reachedEnd)
+            setIsRunning(() => false);
 
           if (shouldAudioStart(stages, prev, next)) {
             startAudio.play();
@@ -213,7 +225,7 @@ const App: React.FC = () => {
       <Button onClick={handleStartPauseResume}>{
         isRunning ? "Pause" : (
           (timerState.stageIndex < 0) ||
-          (timerState.stageIndex >= stages.length) ? "Start" : "Resume"
+          (timerState.reachedEnd) ? "Start" : "Resume"
         )
       }</Button>
       <Button onClick={handleReset}>Reset</Button>
