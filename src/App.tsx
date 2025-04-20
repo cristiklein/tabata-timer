@@ -204,7 +204,7 @@ const App: React.FC = () => {
             const i = next.stageIndex;
             const el = document.getElementById('stage-'+i);
             if (el)
-              el.scrollIntoView();
+              el.scrollIntoView({ behavior: "smooth" });
             else
               console.log("Couldn't scroll into view");
           }
