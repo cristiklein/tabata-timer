@@ -105,7 +105,6 @@ class TimerState {
       if (next.stageIndex >= stages.length) {
         next.reachedEnd = true;
         next.elapsedTimeMs = next.stageEndTimeMs;
-        next.stageEndTimeMs = Infinity;
       }
       else {
         next.stageEndTimeMs += stages[next.stageIndex].durationMs;
