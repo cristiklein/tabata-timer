@@ -64,6 +64,7 @@ const StageDuration = styled.span`
 
 const Button = styled.button`
   width: 50%;
+  min-height: 50px;
 `;
 
 const Title = styled.h1`
