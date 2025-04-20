@@ -190,7 +190,7 @@ const App: React.FC = () => {
 
           if (nextStageIndex === -1) {
             setIsRunning(false);
-            return prev;
+            return Math.floor(next / 1000) * 1000;
           }
           return next;
         });
