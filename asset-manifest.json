@@ -1,15 +1,16 @@
 {
   "files": {
-    "main.css": "/tabata-timer/static/css/main.0de54743.css",
-    "main.js": "/tabata-timer/static/js/main.d4daaac9.js",
+    "main.css": "/tabata-timer/static/css/main.ff1c600f.css",
+    "main.js": "/tabata-timer/static/js/main.fb32c38d.js",
     "static/media/stop-sound.mp3": "/tabata-timer/static/media/stop-sound.8a8af985f1f463b9504e.mp3",
     "static/media/prepare-sound.mp3": "/tabata-timer/static/media/prepare-sound.e61ee88418ea419b0456.mp3",
+    "service-worker.js": "/tabata-timer/service-worker.js",
     "index.html": "/tabata-timer/index.html",
-    "main.0de54743.css.map": "/tabata-timer/static/css/main.0de54743.css.map",
-    "main.d4daaac9.js.map": "/tabata-timer/static/js/main.d4daaac9.js.map"
+    "main.ff1c600f.css.map": "/tabata-timer/static/css/main.ff1c600f.css.map",
+    "main.fb32c38d.js.map": "/tabata-timer/static/js/main.fb32c38d.js.map"
   },
   "entrypoints": [
-    "static/css/main.0de54743.css",
-    "static/js/main.d4daaac9.js"
+    "static/css/main.ff1c600f.css",
+    "static/js/main.fb32c38d.js"
   ]
 }
