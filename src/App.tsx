@@ -199,8 +199,11 @@ function shouldAudioPrepare(
   return false;
 }
 
-const App: React.FC = () => {
-  const [stages] = useState<Stage[]>(initStages());
+interface AppProps {
+  stages?: Stage[];
+}
+
+const App: React.FC<AppProps> = ({ stages = initStages() }) => {
   const [isRunning, setIsRunning] = useState(false);
   const [timerState, setTimerState] = useState<TimerState>(new TimerState());
   const lastUpdatedRef = useRef<number>(0);
