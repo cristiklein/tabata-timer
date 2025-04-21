@@ -22,7 +22,7 @@ function initStages(): Stage[] {
   const stages: Stage[] = [];
 
   for (let cycle: number = 0; cycle < 8; cycle++) {
-    stages.push({ name: 'Prep', durationMs: 10000 });
+    stages.push({ name: 'Rest', durationMs: 10000 });
     stages.push({ name: 'Work', durationMs: 30000 });
   }
 
@@ -75,7 +75,7 @@ const MainContainer = styled.div`
     font-family: monospace;
     text-align: center;
 
-    & .prep {
+    & .rest {
       background-color: green;
     }
 
@@ -281,7 +281,7 @@ const App: React.FC<AppProps> = ({ stages = initStages() }) => {
       <div className="timers">
         <div className={
           stageName === "Work" ? "work" :
-          stageName === "Prep" ? "prep" :
+          stageName === "Rest" ? "rest" :
           ""
         }>{ stageName }</div>
         <div>{ formatDuration(timerState.stageEndTimeMs - timerState.elapsedTimeMs) }</div>
