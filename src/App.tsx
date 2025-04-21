@@ -28,6 +28,12 @@ function initStages(): Stage[] {
   return stages;
 }
 
+const FlexContainer = styled.div`
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+`;
+
 const StageList = styled.ul`
   padding: 0;
   margin: 0;
@@ -75,6 +81,7 @@ const Timer = styled.div`
 const VerticalScrollContainer = styled.div<{ $height: string }>`
   overflow-y: scroll;
   height: ${props => props.$height};
+  flex-grow: 1;
 `;
 
 class TimerState {
@@ -233,15 +240,17 @@ const App: React.FC = () => {
   };
 
   return (
-    <div>
+    <FlexContainer>
       <Title>Tabata Timer</Title>
-      <Button onClick={handleStartPauseResume}>{
-        isRunning ? "Pause" : (
-          (timerState.stageIndex < 0) ||
-          (timerState.reachedEnd) ? "Start" : "Resume"
-        )
-      }</Button>
-      <Button onClick={handleReset}>Reset</Button>
+      <div>
+        <Button onClick={handleStartPauseResume}>{
+          isRunning ? "Pause" : (
+            (timerState.stageIndex < 0) ||
+            (timerState.reachedEnd) ? "Start" : "Resume"
+          )
+        }</Button>
+        <Button onClick={handleReset}>Reset</Button>
+      </div>
       <Timer>{ (stages[timerState.stageIndex] || { name: "Click start" }).name }</Timer>
       <Timer>{ formatDuration(timerState.stageEndTimeMs - timerState.elapsedTimeMs) }</Timer>
       <VerticalScrollContainer $height="450px">
@@ -259,7 +268,7 @@ const App: React.FC = () => {
         ))}
       </StageList>
       </VerticalScrollContainer>
-    </div>
+    </FlexContainer>
   );
 }
 
