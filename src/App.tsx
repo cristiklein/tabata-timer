@@ -26,6 +26,8 @@ function initStages(): Stage[] {
     stages.push({ name: 'Work', durationMs: 30000 });
   }
 
+  stages.push({ name: 'Finish', durationMs: 10000 });
+
   return stages;
 }
 
