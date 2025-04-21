@@ -193,6 +193,8 @@ const App: React.FC = () => {
 
           if (shouldAudioPrepare(stages, prev, next)) {
             prepareAudio.play();
+            if (navigator.vibrate)
+              navigator.vibrate([200, 800, 200, 800, 200, 800, 200]);
             const i = next.stageIndex;
             const el = document.getElementById('stage-'+i);
             if (el)
@@ -201,6 +203,8 @@ const App: React.FC = () => {
               console.log("Couldn't scroll into view");
           }
           if (shouldAudioStop(stages, prev, next)) {
+            if (navigator.vibrate)
+              navigator.vibrate(500);
             stopAudio.play();
           }
 
