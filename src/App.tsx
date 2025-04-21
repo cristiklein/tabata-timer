@@ -30,37 +30,64 @@ function initStages(): Stage[] {
 }
 
 const MainContainer = styled.div`
+  display: grid;
+
+  grid-template-areas:
+    "header"
+    "version"
+    "buttons"
+    "timers"
+    "stages";
+  grid-template-rows: auto auto auto auto 1fr;
+  gap: 10px;
+  box-sizing: border-box;
+  padding: 0;
+
+  height: 100%;
+  max-width: 800px;
+  margin: auto;
+
   h1 {
+    grid-area: header;
     margin: 0px;
     padding: 0px;
     text-align: center;
   }
 
   .version {
+    grid-area: version;
     text-align: center;
   }
 
-  button {
-    width: 50%;
-    min-height: 50px;
-    font-size: 20px;
+  .buttons {
+    grid-area: buttons;
+
+    & button {
+      width: 50%;
+      min-height: 50px;
+      font-size: 20px;
+    }
   }
 
-  .timer {
+  .timers {
+    grid-area: timers;
     font-size: 50px;
     font-family: monospace;
     text-align: center;
 
-    &.prep {
+    & .prep {
       background-color: green;
     }
 
-    &.work {
+    & .work {
       background-color: red;
     }
   }
 
   .stageListContainer {
+    grid-area: stages;
+    overflow: auto;
+
     & ul {
       padding: 0;
       margin: 0;
@@ -77,6 +104,19 @@ const MainContainer = styled.div`
         background-color: #f0f8ff;
         font-weight: bold;
       }
+    }
+  }
+
+  /* Responsive Adjustments */
+  @media (min-width: 640px) {
+    & {
+      grid-template-areas:
+        "header stages"
+        "version stages"
+        "buttons stages"
+        "timers stages";
+      grid-template-columns: 350px 1fr;
+      grid-template-rows: auto auto auto 1fr;
     }
   }
 `;
@@ -226,7 +266,7 @@ const App: React.FC = () => {
     <MainContainer>
       <h1>Tabata Timer</h1>
       <div className="version">{ version }</div>
-      <div>
+      <div className="buttons">
         <button onClick={handleStartPauseResume}>{
           isRunning ? "Pause" : (
             (timerState.stageIndex < 0) ||
@@ -235,12 +275,14 @@ const App: React.FC = () => {
         }</button>
         <button onClick={handleReset}>Reset</button>
       </div>
-      <div className={
-        stageName === "Work" ? "timer work" :
-        stageName === "Prep" ? "timer prep" :
-        "timer"
-      }>{ stageName }</div>
-      <div className="timer">{ formatDuration(timerState.stageEndTimeMs - timerState.elapsedTimeMs) }</div>
+      <div className="timers">
+        <div className={
+          stageName === "Work" ? "work" :
+          stageName === "Prep" ? "prep" :
+          ""
+        }>{ stageName }</div>
+        <div>{ formatDuration(timerState.stageEndTimeMs - timerState.elapsedTimeMs) }</div>
+      </div>
       <div className="stageListContainer">
       <ul>
         {stages.map((stage, i) => (
