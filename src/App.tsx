@@ -24,7 +24,8 @@ function initStages(): Stage[] {
   const stages: Stage[] = [];
 
   for (let cycle: number = 0; cycle < 8; cycle++) {
-    stages.push({ name: 'Rest', durationMs: 10000 });
+    const restName = (cycle === 0) ? 'Prepare' : 'Rest';
+    stages.push({ name: restName, durationMs: 10000 });
     stages.push({ name: 'Work', durationMs: 30000 });
   }
 
