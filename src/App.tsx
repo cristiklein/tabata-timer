@@ -7,9 +7,11 @@ import { formatDuration } from './utils';
 
 import prepareSoundMp3 from './assets/prepare-sound.mp3';
 import stopSoundMp3 from './assets/stop-sound.mp3';
+import finishSoundMp3 from './assets/finish-sound.mp3';
 
 const prepareAudio = new Audio(prepareSoundMp3);
 const stopAudio = new Audio(stopSoundMp3);
+const finishAudio = new Audio(finishSoundMp3);
 
 const version = require('../package.json').version;
 
@@ -189,6 +191,12 @@ function shouldAudioPrepare(
   if (stages[prev.stageIndex].name === "Work")
     return false;
 
+  if (stages.length <= prev.stageIndex+1)
+    return false;
+
+  if (stages[prev.stageIndex+1].name !== "Work")
+    return false;
+
   const prevTimeToEnd = prev.stageEndTimeMs - prev.elapsedTimeMs;
   const nextTimeToEnd = next.stageEndTimeMs - next.elapsedTimeMs;
   if (prev.stageEndTimeMs !== next.stageEndTimeMs)
@@ -201,11 +209,30 @@ function shouldAudioPrepare(
   return false;
 }
 
+function shouldAudioFinish(
+  stages: Stage[],
+  prev: TimerState,
+  next: TimerState,
+): boolean {
+  if (prev.stageIndex === next.stageIndex)
+    return false;
+
+  if (prev.stageIndex < 0 || stages.length <= prev.stageIndex)
+    return false;
+
+  if (stages[prev.stageIndex].name !== "Finish")
+    return false;
+
+  return true;
+}
+
+const DEFAULT_STAGES = initStages();
+
 interface AppProps {
   stages?: Stage[];
 }
 
-const App: React.FC<AppProps> = ({ stages = initStages() }) => {
+const App: React.FC<AppProps> = ({ stages = DEFAULT_STAGES }) => {
   const [isRunning, setIsRunning] = useState(false);
   const [timerState, setTimerState] = useState<TimerState>(new TimerState());
   const lastUpdatedRef = useRef<number>(0);
@@ -242,6 +269,11 @@ const App: React.FC<AppProps> = ({ stages = initStages() }) => {
             if (navigator.vibrate)
               navigator.vibrate(500);
             stopAudio.play();
+          }
+          if (shouldAudioFinish(stages, prev, next)) {
+            if (navigator.vibrate)
+              navigator.vibrate([100, 200, 500]);
+            finishAudio.play();
           }
 
           return next;
