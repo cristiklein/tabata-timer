@@ -31,8 +31,17 @@ function initStages(): Stage[] {
 
 const FlexContainer = styled.div`
   height: 100%;
+  width: 100%;
   display: flex;
-  flex-direction: column;
+  flex-flow: column wrap;
+  justify-content: space-between;
+  column-gap: 10px;
+  row-gap: 10px;
+
+  & > *:last-child {
+    flex-grow: 1;
+    min-width: 350px;
+  }
 `;
 
 const StageList = styled.ul`
@@ -67,7 +76,11 @@ const Button = styled.button`
 
 const Title = styled.h1`
   margin: 0px;
-  padding: 5px 0px;
+  padding: 0px;
+  text-align: center;
+`;
+
+const Version = styled.div`
   text-align: center;
 `;
 
@@ -76,18 +89,15 @@ const Timer = styled.div<{ $stageName?: string }>`
   font-family: monospace;
   text-align: center;
 
-  margin: 10px 0;
-
   background-color: ${ props => (
     props.$stageName === "Work" ? "red" :
     props.$stageName === "Prep" ? "green" :
     '' ) };
 `;
 
-const VerticalScrollContainer = styled.div<{ $height: string }>`
+const VerticalScrollContainer = styled.div`
   overflow-y: scroll;
-  height: ${props => props.$height};
-  flex-grow: 1;
+  height: 300px;
 `;
 
 class TimerState {
@@ -234,6 +244,7 @@ const App: React.FC = () => {
   return (
     <FlexContainer>
       <Title>Tabata Timer</Title>
+      <Version>{ version }</Version>
       <div>
         <Button onClick={handleStartPauseResume}>{
           isRunning ? "Pause" : (
@@ -245,7 +256,7 @@ const App: React.FC = () => {
       </div>
       <Timer $stageName={stageName}>{ stageName }</Timer>
       <Timer>{ formatDuration(timerState.stageEndTimeMs - timerState.elapsedTimeMs) }</Timer>
-      <VerticalScrollContainer $height="450px">
+      <VerticalScrollContainer>
       <StageList>
         {stages.map((stage, i) => (
           <StageItem
@@ -260,9 +271,6 @@ const App: React.FC = () => {
         ))}
       </StageList>
       </VerticalScrollContainer>
-      <div>
-        Version: { version }
-      </div>
     </FlexContainer>
   );
 }
