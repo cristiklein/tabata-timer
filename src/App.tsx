@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 
 import styled from 'styled-components';
 
+
 import { formatDuration } from './utils';
 
 import startSoundMp3 from './assets/start-sound.mp3';
@@ -11,6 +12,8 @@ import prepareSoundMp3 from './assets/prepare-sound.mp3';
 const startAudio = new Audio(startSoundMp3);
 const stopAudio = new Audio(stopSoundMp3);
 const prepareAudio = new Audio(prepareSoundMp3);
+
+const version = require('../package.json').version;
 
 export interface Stage {
   name: string;
@@ -279,6 +282,9 @@ const App: React.FC = () => {
         ))}
       </StageList>
       </VerticalScrollContainer>
+      <div>
+        Version: { version }
+      </div>
     </FlexContainer>
   );
 }
