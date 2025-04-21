@@ -29,75 +29,56 @@ function initStages(): Stage[] {
   return stages;
 }
 
-const FlexContainer = styled.div`
-  height: 100%;
-  width: 100%;
-  display: flex;
-  flex-flow: column wrap;
-  justify-content: space-between;
-  column-gap: 10px;
-  row-gap: 10px;
-
-  & > *:last-child {
-    flex-grow: 1;
-    min-width: 350px;
+const MainContainer = styled.div`
+  h1 {
+    margin: 0px;
+    padding: 0px;
+    text-align: center;
   }
-`;
 
-const StageList = styled.ul`
-  padding: 0;
-  margin: 0;
-  font-size: 32px;
-`;
+  .version {
+    text-align: center;
+  }
 
-const StageItem = styled.li<{ $active: boolean }>`
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 12px;
-  border-bottom: 1px solid #ddd;
-  background-color: ${({ $active }) => ($active ? '#f0f8ff' : 'transparent')};
-  font-weight: ${({ $active }) => ($active ? 'bold' : 'normal')};
-`;
+  button {
+    width: 50%;
+    min-height: 50px;
+    font-size: 20px;
+  }
 
-const StageName = styled.span`
-  text-align: left;
-`;
+  .timer {
+    font-size: 50px;
+    font-family: monospace;
+    text-align: center;
 
-const StageDuration = styled.span`
-  text-align: right;
-  min-width: 40px;
-`;
+    &.prep {
+      background-color: green;
+    }
 
-const Button = styled.button`
-  width: 50%;
-  min-height: 50px;
-  font-size: 20px;
-`;
+    &.work {
+      background-color: red;
+    }
+  }
 
-const Title = styled.h1`
-  margin: 0px;
-  padding: 0px;
-  text-align: center;
-`;
+  .stageListContainer {
+    & ul {
+      padding: 0;
+      margin: 0;
+      font-size: 32px;
+    }
 
-const Version = styled.div`
-  text-align: center;
-`;
+    & li {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 12px;
+      border-bottom: 1px solid #ddd;
 
-const Timer = styled.div<{ $stageName?: string }>`
-  font-size: 50px;
-  font-family: monospace;
-  text-align: center;
-
-  background-color: ${ props => (
-    props.$stageName === "Work" ? "red" :
-    props.$stageName === "Prep" ? "green" :
-    '' ) };
-`;
-
-const VerticalScrollContainer = styled.div`
-  overflow-y: scroll;
-  height: 300px;
+      &.active {
+        background-color: #f0f8ff;
+        font-weight: bold;
+      }
+    }
+  }
 `;
 
 class TimerState {
@@ -242,36 +223,40 @@ const App: React.FC = () => {
   const stageName = (stages[timerState.stageIndex] || { name: "Click start" }).name;
 
   return (
-    <FlexContainer>
-      <Title>Tabata Timer</Title>
-      <Version>{ version }</Version>
+    <MainContainer>
+      <h1>Tabata Timer</h1>
+      <div className="version">{ version }</div>
       <div>
-        <Button onClick={handleStartPauseResume}>{
+        <button onClick={handleStartPauseResume}>{
           isRunning ? "Pause" : (
             (timerState.stageIndex < 0) ||
             (timerState.reachedEnd) ? "Start" : "Resume"
           )
-        }</Button>
-        <Button onClick={handleReset}>Reset</Button>
+        }</button>
+        <button onClick={handleReset}>Reset</button>
       </div>
-      <Timer $stageName={stageName}>{ stageName }</Timer>
-      <Timer>{ formatDuration(timerState.stageEndTimeMs - timerState.elapsedTimeMs) }</Timer>
-      <VerticalScrollContainer>
-      <StageList>
+      <div className={
+        stageName === "Work" ? "timer work" :
+        stageName === "Prep" ? "timer prep" :
+        "timer"
+      }>{ stageName }</div>
+      <div className="timer">{ formatDuration(timerState.stageEndTimeMs - timerState.elapsedTimeMs) }</div>
+      <div className="stageListContainer">
+      <ul>
         {stages.map((stage, i) => (
-          <StageItem
+          <li
             key={i}
-            $active={i === timerState.stageIndex}
             id={"stage-"+(i)}
+            className={ i === timerState.stageIndex ? "active" : ""}
           >
-            <StageName>{i+1}</StageName>
-            <StageName>{stage.name}</StageName>
-            <StageDuration>{stage.durationMs / 1000}s</StageDuration>
-          </StageItem>
+            <span>{i+1}</span>
+            <span>{stage.name}</span>
+            <span>{stage.durationMs / 1000}s</span>
+          </li>
         ))}
-      </StageList>
-      </VerticalScrollContainer>
-    </FlexContainer>
+      </ul>
+      </div>
+    </MainContainer>
   );
 }
 
