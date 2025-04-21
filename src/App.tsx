@@ -128,23 +128,6 @@ class TimerState {
   }
 }
 
-function shouldAudioStart(
-  stages: Stage[],
-  prev: TimerState,
-  next: TimerState,
-): boolean {
-  if (prev.stageIndex === next.stageIndex)
-    return false;
-
-  if (next.stageIndex >= stages.length)
-    return false;
-
-  if (stages[next.stageIndex].name !== "Work")
-    return false;
-
-  return true;
-}
-
 function shouldAudioStop(
   stages: Stage[],
   prev: TimerState,
