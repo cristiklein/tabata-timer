@@ -130,15 +130,22 @@ class TimerState {
   stageIndex = -1;
   stageEndTimeMs = 0;
   reachedEnd = false;
+  stages: Stage[];
+
+  constructor(stages: Stage[]) {
+    this.stages = stages;
+  }
 
   /* Return a new TimerState from the current state */
-  next(stages: Stage[], deltaMs: number): TimerState {
+  next(deltaMs: number): TimerState {
+    const stages = this.stages;
+
     let prev: TimerState = this;
-    const next = new TimerState();
+    const next = new TimerState(stages);
 
     /* Have we been restarted after the last stage? Reset! */
     if (prev.stageIndex >= stages.length) {
-      prev = new TimerState();
+      prev = new TimerState(stages);
     }
 
     next.elapsedTimeMs = prev.elapsedTimeMs + deltaMs;
@@ -234,7 +241,7 @@ interface AppProps {
 
 const App: React.FC<AppProps> = ({ stages = DEFAULT_STAGES }) => {
   const [isRunning, setIsRunning] = useState(false);
-  const [timerState, setTimerState] = useState<TimerState>(new TimerState());
+  const [timerState, setTimerState] = useState<TimerState>(new TimerState(stages));
   const lastUpdatedRef = useRef<number>(0);
 
   useEffect(() => {
@@ -249,7 +256,7 @@ const App: React.FC<AppProps> = ({ stages = DEFAULT_STAGES }) => {
         const now = Date.now();
         const delta = now - lastUpdatedRef.current;
         setTimerState((prev) => {
-          const next = prev.next(stages, delta);
+          const next = prev.next(delta);
 
           if (next.reachedEnd)
             setIsRunning(() => false);
@@ -294,7 +301,7 @@ const App: React.FC<AppProps> = ({ stages = DEFAULT_STAGES }) => {
 
   const handleReset = () => {
     setIsRunning(false);
-    setTimerState(new TimerState());
+    setTimerState(new TimerState(stages));
   };
 
   const stageName = (stages[timerState.stageIndex] || { name: "Click start" }).name;
