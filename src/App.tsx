@@ -70,7 +70,7 @@ const Title = styled.h1`
   text-align: center;
 `;
 
-const Timer = styled.div<{ stageName?: string }>`
+const Timer = styled.div<{ $stageName?: string }>`
   font-size: 50px;
   font-family: monospace;
   text-align: center;
@@ -78,8 +78,8 @@ const Timer = styled.div<{ stageName?: string }>`
   margin: 10px 0;
 
   background-color: ${ props => (
-    props.stageName === "Work" ? "red" :
-    props.stageName === "Prep" ? "green" :
+    props.$stageName === "Work" ? "red" :
+    props.$stageName === "Prep" ? "green" :
     '' ) };
 `;
 
@@ -174,6 +174,10 @@ function shouldAudioPrepare(
 
   const prevTimeToEnd = prev.stageEndTimeMs - prev.elapsedTimeMs;
   const nextTimeToEnd = next.stageEndTimeMs - next.elapsedTimeMs;
+  if (prev.stageEndTimeMs !== next.stageEndTimeMs)
+    /* Stage changed; not our call */
+    return false;
+
   if (prevTimeToEnd > 1000 && nextTimeToEnd <= 1000)
     return true;
   if (prevTimeToEnd > 2000 && nextTimeToEnd <= 2000)
@@ -258,7 +262,7 @@ const App: React.FC = () => {
         }</Button>
         <Button onClick={handleReset}>Reset</Button>
       </div>
-      <Timer stageName={stageName}>{ stageName }</Timer>
+      <Timer $stageName={stageName}>{ stageName }</Timer>
       <Timer>{ formatDuration(timerState.stageEndTimeMs - timerState.elapsedTimeMs) }</Timer>
       <VerticalScrollContainer $height="450px">
       <StageList>
