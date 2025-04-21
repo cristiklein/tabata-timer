@@ -5,13 +5,11 @@ import styled from 'styled-components';
 
 import { formatDuration } from './utils';
 
-import startSoundMp3 from './assets/start-sound.mp3';
-import stopSoundMp3 from './assets/stop-sound.mp3';
 import prepareSoundMp3 from './assets/prepare-sound.mp3';
+import stopSoundMp3 from './assets/stop-sound.mp3';
 
-const startAudio = new Audio(startSoundMp3);
-const stopAudio = new Audio(stopSoundMp3);
 const prepareAudio = new Audio(prepareSoundMp3);
+const stopAudio = new Audio(stopSoundMp3);
 
 const version = require('../package.json').version;
 
@@ -181,10 +179,6 @@ function shouldAudioPrepare(
     /* Stage changed; not our call */
     return false;
 
-  if (prevTimeToEnd > 1000 && nextTimeToEnd <= 1000)
-    return true;
-  if (prevTimeToEnd > 2000 && nextTimeToEnd <= 2000)
-    return true;
   if (prevTimeToEnd > 3000 && nextTimeToEnd <= 3000)
     return true;
 
@@ -214,9 +208,6 @@ const App: React.FC = () => {
           if (next.reachedEnd)
             setIsRunning(() => false);
 
-          if (shouldAudioStart(stages, prev, next)) {
-            startAudio.play();
-          }
           if (shouldAudioPrepare(stages, prev, next)) {
             prepareAudio.play();
             const i = next.stageIndex;
