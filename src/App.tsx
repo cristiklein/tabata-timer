@@ -185,6 +185,9 @@ function shouldAudioStop(
   if (stages[prev.stageIndex].name !== "Work")
     return false;
 
+  if (stages[next.stageIndex].name === "Finish")
+    return false;
+
   return true;
 }
 
@@ -225,10 +228,10 @@ function shouldAudioFinish(
   if (prev.stageIndex === next.stageIndex)
     return false;
 
-  if (prev.stageIndex < 0 || stages.length <= prev.stageIndex)
+  if (next.stageIndex < 0 || stages.length <= next.stageIndex)
     return false;
 
-  if (stages[prev.stageIndex].name !== "Finish")
+  if (stages[next.stageIndex].name !== "Finish")
     return false;
 
   return true;
