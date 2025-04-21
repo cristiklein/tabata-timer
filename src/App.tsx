@@ -59,8 +59,8 @@ const Button = styled.button`
 `;
 
 const Title = styled.h1`
-  margin-block-start: 5px;
-  margin-block-end: 5px;
+  margin: 0px;
+  padding: 5px 0px;
   text-align: center;
 `;
 
