@@ -70,12 +70,17 @@ const Title = styled.h1`
   text-align: center;
 `;
 
-const Timer = styled.div`
+const Timer = styled.div<{ stageName?: string }>`
   font-size: 50px;
   font-family: monospace;
   text-align: center;
 
   margin: 10px 0;
+
+  background-color: ${ props => (
+    props.stageName === "Work" ? "red" :
+    props.stageName === "Prep" ? "green" :
+    '' ) };
 `;
 
 const VerticalScrollContainer = styled.div<{ $height: string }>`
@@ -239,6 +244,8 @@ const App: React.FC = () => {
     setTimerState(new TimerState());
   };
 
+  const stageName = (stages[timerState.stageIndex] || { name: "Click start" }).name;
+
   return (
     <FlexContainer>
       <Title>Tabata Timer</Title>
@@ -251,7 +258,7 @@ const App: React.FC = () => {
         }</Button>
         <Button onClick={handleReset}>Reset</Button>
       </div>
-      <Timer>{ (stages[timerState.stageIndex] || { name: "Click start" }).name }</Timer>
+      <Timer stageName={stageName}>{ stageName }</Timer>
       <Timer>{ formatDuration(timerState.stageEndTimeMs - timerState.elapsedTimeMs) }</Timer>
       <VerticalScrollContainer $height="450px">
       <StageList>
