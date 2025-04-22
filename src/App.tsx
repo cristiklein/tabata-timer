@@ -46,11 +46,16 @@ const MainContainer = styled.div`
 
   .buttons {
     grid-area: buttons;
+    display: flex;
 
     & button {
       width: 50%;
       min-height: 50px;
       font-size: 20px;
+
+      &.small {
+        width: auto;
+      }
     }
   }
 
@@ -106,11 +111,25 @@ const MainContainer = styled.div`
   }
 `;
 
-interface AppProps {
-  stages?: Stage[];
+function scrollMe(next: TimerState) {
+  const i = next.stageIndex;
+  const el = document.getElementById('stage-'+i);
+  if (el)
+    el.scrollIntoView({ behavior: "smooth" });
+  else
+    console.log("Couldn't scroll into view");
 }
 
-const App: React.FC<AppProps> = () => {
+function scrollMeIfNeeded(next: TimerState) {
+  const i = next.stageIndex;
+  const el = document.getElementById('stage-'+i);
+  if (el)
+    el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  else
+    console.log("Couldn't scroll into view");
+}
+
+const App: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [timerState, setTimerState] = useState<TimerState>(new TimerState());
   const lastUpdatedRef = useRef<number>(0);
@@ -136,12 +155,7 @@ const App: React.FC<AppProps> = () => {
             prepareAudio.play();
             if (navigator.vibrate)
               navigator.vibrate([200, 800, 200, 800, 200, 800, 200]);
-            const i = next.stageIndex;
-            const el = document.getElementById('stage-'+i);
-            if (el)
-              el.scrollIntoView({ behavior: "smooth" });
-            else
-              console.log("Couldn't scroll into view");
+            scrollMe(next);
           }
 
           if (next.events.includes('stop')) {
@@ -177,6 +191,20 @@ const App: React.FC<AppProps> = () => {
     setTimerState(new TimerState(stages));
   };
 
+  const handleGotoStageRel = (amount) => {
+    const next = timerState.gotoStageRel(amount);
+    setTimerState(next);
+    scrollMeIfNeeded(next);
+  }
+
+  const handlePrev = () => {
+    handleGotoStageRel(-1);
+  };
+
+  const handleNext = () => {;
+    handleGotoStageRel(+1);
+  };
+
   const stageName = (timerState.stages[timerState.stageIndex] || { name: "Click start" }).name;
 
   return (
@@ -184,6 +212,7 @@ const App: React.FC<AppProps> = () => {
       <h1>Tabata Timer</h1>
       <div className="version">{ __APP_VERSION__ }</div>
       <div className="buttons">
+        <button onClick={handlePrev} className="small">&lt;</button>
         <button onClick={handleStartPauseResume}>{
           isRunning ? "Pause" : (
             (timerState.stageIndex < 0) ||
@@ -191,6 +220,7 @@ const App: React.FC<AppProps> = () => {
           )
         }</button>
         <button onClick={handleReset}>Reset</button>
+        <button onClick={handleNext} className="small">&gt;</button>
       </div>
       <div className="timers">
         <div className={

@@ -74,4 +74,17 @@ export default class TimerState {
 
     return next;
   }
+
+  gotoStageRel(amount: number): TimerState {
+    const next: TimerState = Object.create(this);
+
+    next.stageIndex = this.stageIndex + amount;
+
+    next.stageIndex = Math.max(0, next.stageIndex);
+    next.stageIndex = Math.min(next.stageIndex, next.stages.length - 1);
+    next.remainingStageTimeMs = this.stages[next.stageIndex].durationMs;
+    next.reachedEnd = false;
+
+    return next;
+  }
 }
