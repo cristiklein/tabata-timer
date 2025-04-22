@@ -9,4 +9,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/setupTests.ts'],
   },
+  define: {
+    '__APP_VERSION__': JSON.stringify('test-version'),
+  },
 });

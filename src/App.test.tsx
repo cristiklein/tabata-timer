@@ -7,3 +7,9 @@ test('renders Start button', () => {
   const linkElement = screen.getByText(/Start/);
   expect(linkElement).toBeInTheDocument();
 });
+
+test('renders version', () => {
+  render(<App />);
+  const linkElement = screen.getByText(/test-version/);
+  expect(linkElement).toBeInTheDocument();
+});

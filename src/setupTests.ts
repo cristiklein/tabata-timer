@@ -7,5 +7,3 @@ expect.extend(matchers);
 afterEach(() => {
   cleanup();
 });
-
-global.__APP_VERSION__ = 'test-version';
