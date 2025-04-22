@@ -188,10 +188,10 @@ const App: React.FC = () => {
 
   const handleReset = () => {
     setIsRunning(false);
-    setTimerState(new TimerState(stages));
+    setTimerState(new TimerState());
   };
 
-  const handleGotoStageRel = (amount) => {
+  const handleGotoStageRel = (amount: number) => {
     const next = timerState.gotoStageRel(amount);
     setTimerState(next);
     scrollMeIfNeeded(next);

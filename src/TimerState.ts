@@ -51,7 +51,6 @@ export default class TimerState {
     next.events = [];
     const thisStageName = (this.stages[this.stageIndex] || { name: "---" }).name;
     const nextStageName = (this.stages[next.stageIndex] || { name: "---" }).name;
-    const futureStageName = (this.stages[next.stageIndex+1] || { name: "---" }).name;
 
     if (
       [ "Prepare", "Rest" ].includes(nextStageName) &&
