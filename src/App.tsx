@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 
 import styled from 'styled-components';
 
-
 import { formatDuration } from './utils';
 
 import prepareSoundMp3 from './assets/prepare-sound.mp3';
@@ -13,24 +12,7 @@ const prepareAudio = new Audio(prepareSoundMp3);
 const stopAudio = new Audio(stopSoundMp3);
 const finishAudio = new Audio(finishSoundMp3);
 
-export interface Stage {
-  name: string;
-  durationMs: number;
-}
-
-function initStages(): Stage[] {
-  const stages: Stage[] = [];
-
-  for (let cycle: number = 0; cycle < 8; cycle++) {
-    const restName = (cycle === 0) ? 'Prepare' : 'Rest';
-    stages.push({ name: restName, durationMs: 10000 });
-    stages.push({ name: 'Work', durationMs: 30000 });
-  }
-
-  stages.push({ name: 'Finish', durationMs: 10000 });
-
-  return stages;
-}
+import TimerState from './TimerState';
 
 const MainContainer = styled.div`
   display: grid;
@@ -124,126 +106,13 @@ const MainContainer = styled.div`
   }
 `;
 
-class TimerState {
-  elapsedTimeMs = 0;
-  stageIndex = -1;
-  stageEndTimeMs = 0;
-  reachedEnd = false;
-  stages: Stage[];
-
-  constructor(stages: Stage[]) {
-    this.stages = stages;
-  }
-
-  /* Return a new TimerState from the current state */
-  next(deltaMs: number): TimerState {
-    const stages = this.stages;
-
-    let prev: TimerState = this;
-    const next = new TimerState(stages);
-
-    /* Have we been restarted after the last stage? Reset! */
-    if (prev.stageIndex >= stages.length) {
-      prev = new TimerState(stages);
-    }
-
-    next.elapsedTimeMs = prev.elapsedTimeMs + deltaMs;
-    next.stageIndex = prev.stageIndex;
-    next.stageEndTimeMs = prev.stageEndTimeMs;
-
-    /* Check if we went over a stage */
-    if (next.elapsedTimeMs >= prev.stageEndTimeMs) {
-      next.stageIndex += 1;
-
-      /* Check if we reached the end */
-      if (next.stageIndex >= stages.length) {
-        next.reachedEnd = true;
-        next.elapsedTimeMs = next.stageEndTimeMs;
-      }
-      else {
-        next.stageEndTimeMs += stages[next.stageIndex].durationMs;
-      }
-    }
-
-    return next;
-  }
-}
-
-function shouldAudioStop(
-  stages: Stage[],
-  prev: TimerState,
-  next: TimerState,
-): boolean {
-  if (prev.stageIndex === next.stageIndex)
-    return false;
-
-  if (prev.stageIndex < 0 || stages.length <= prev.stageIndex)
-    return false;
-
-  if (stages[prev.stageIndex].name !== "Work")
-    return false;
-
-  if (stages[next.stageIndex].name === "Finish")
-    return false;
-
-  return true;
-}
-
-function shouldAudioPrepare(
-  stages: Stage[],
-  prev: TimerState,
-  next: TimerState,
-): boolean {
-  if (prev.stageIndex < 0 || stages.length <= prev.stageIndex)
-    return false;
-
-  if (stages[prev.stageIndex].name === "Work")
-    return false;
-
-  if (stages.length <= prev.stageIndex+1)
-    return false;
-
-  if (stages[prev.stageIndex+1].name !== "Work")
-    return false;
-
-  const prevTimeToEnd = prev.stageEndTimeMs - prev.elapsedTimeMs;
-  const nextTimeToEnd = next.stageEndTimeMs - next.elapsedTimeMs;
-  if (prev.stageEndTimeMs !== next.stageEndTimeMs)
-    /* Stage changed; not our call */
-    return false;
-
-  if (prevTimeToEnd > 3000 && nextTimeToEnd <= 3000)
-    return true;
-
-  return false;
-}
-
-function shouldAudioFinish(
-  stages: Stage[],
-  prev: TimerState,
-  next: TimerState,
-): boolean {
-  if (prev.stageIndex === next.stageIndex)
-    return false;
-
-  if (next.stageIndex < 0 || stages.length <= next.stageIndex)
-    return false;
-
-  if (stages[next.stageIndex].name !== "Finish")
-    return false;
-
-  return true;
-}
-
-const DEFAULT_STAGES = initStages();
-
 interface AppProps {
   stages?: Stage[];
 }
 
-const App: React.FC<AppProps> = ({ stages = DEFAULT_STAGES }) => {
+const App: React.FC<AppProps> = () => {
   const [isRunning, setIsRunning] = useState(false);
-  const [timerState, setTimerState] = useState<TimerState>(new TimerState(stages));
+  const [timerState, setTimerState] = useState<TimerState>(new TimerState());
   const lastUpdatedRef = useRef<number>(0);
 
   useEffect(() => {
@@ -263,7 +132,7 @@ const App: React.FC<AppProps> = ({ stages = DEFAULT_STAGES }) => {
           if (next.reachedEnd)
             setIsRunning(() => false);
 
-          if (shouldAudioPrepare(stages, prev, next)) {
+          if (next.events.includes('prepare')) {
             prepareAudio.play();
             if (navigator.vibrate)
               navigator.vibrate([200, 800, 200, 800, 200, 800, 200]);
@@ -274,12 +143,14 @@ const App: React.FC<AppProps> = ({ stages = DEFAULT_STAGES }) => {
             else
               console.log("Couldn't scroll into view");
           }
-          if (shouldAudioStop(stages, prev, next)) {
+
+          if (next.events.includes('stop')) {
             if (navigator.vibrate)
               navigator.vibrate(500);
             stopAudio.play();
           }
-          if (shouldAudioFinish(stages, prev, next)) {
+
+          if (next.events.includes('finish')) {
             if (navigator.vibrate)
               navigator.vibrate([100, 200, 500]);
             finishAudio.play();
@@ -295,7 +166,7 @@ const App: React.FC<AppProps> = ({ stages = DEFAULT_STAGES }) => {
       console.log('Timer cleared');
       clearInterval(timerId);
     };
-  }, [isRunning, stages]);
+  }, [isRunning]);
 
   const handleStartPauseResume = () => {
     setIsRunning(!isRunning);
@@ -306,7 +177,7 @@ const App: React.FC<AppProps> = ({ stages = DEFAULT_STAGES }) => {
     setTimerState(new TimerState(stages));
   };
 
-  const stageName = (stages[timerState.stageIndex] || { name: "Click start" }).name;
+  const stageName = (timerState.stages[timerState.stageIndex] || { name: "Click start" }).name;
 
   return (
     <MainContainer>
@@ -327,11 +198,11 @@ const App: React.FC<AppProps> = ({ stages = DEFAULT_STAGES }) => {
           stageName === "Rest" ? "rest" :
           ""
         }>{ stageName }</div>
-        <div>{ formatDuration(timerState.stageEndTimeMs - timerState.elapsedTimeMs) }</div>
+        <div>{ formatDuration(timerState.remainingStageTimeMs) }</div>
       </div>
       <div className="stageListContainer">
       <ul>
-        {stages.map((stage, i) => (
+        {timerState.stages.map((stage, i) => (
           <li
             key={i}
             id={"stage-"+(i)}
