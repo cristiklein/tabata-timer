@@ -13,8 +13,6 @@ const prepareAudio = new Audio(prepareSoundMp3);
 const stopAudio = new Audio(stopSoundMp3);
 const finishAudio = new Audio(finishSoundMp3);
 
-const version = require('../package.json').version;
-
 export interface Stage {
   name: string;
   durationMs: number;
@@ -313,7 +311,7 @@ const App: React.FC<AppProps> = ({ stages = DEFAULT_STAGES }) => {
   return (
     <MainContainer>
       <h1>Tabata Timer</h1>
-      <div className="version">{ version }</div>
+      <div className="version">{ __APP_VERSION__ }</div>
       <div className="buttons">
         <button onClick={handleStartPauseResume}>{
           isRunning ? "Pause" : (
