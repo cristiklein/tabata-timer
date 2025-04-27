@@ -64,13 +64,31 @@ const MainContainer = styled.div`
     font-size: 50px;
     font-family: monospace;
     text-align: center;
+    position: relative;
+    z-index: -1;
+    background-color: lightgrey;
 
-    & .rest {
-      background-color: green;
+    & #progress-bar {
+      position: absolute;
+      height: 100%;
+      z-index: -1;
+      background-color: grey;
     }
 
-    & .work {
-      background-color: red;
+    &.rest {
+      background-color: lightgreen;
+
+      & #progress-bar {
+        background-color: green;
+      }
+    }
+
+    &.work {
+      background-color: lightpink;
+
+      & #progress-bar {
+        background-color: deeppink;
+      }
     }
   }
 
@@ -109,6 +127,20 @@ const MainContainer = styled.div`
       grid-template-rows: auto auto auto 1fr;
     }
   }
+`;
+
+const ProgressBar = styled.div.attrs(({ $progress, $expectedProgressSpeed } ) => ({
+  style: {
+    width: `${Math.min(Math.max($progress, 0), 1) * 100}%`,
+    'transition-duration': $progress === 1 ? "0.0s" : `${$expectedProgressSpeed}s`,
+  },
+}))`
+  position: absolute;
+  height: 100%;
+  z-index: -1;
+  background-color: grey;
+  transition-property: width;
+  transition-timing-function: linear;
 `;
 
 function scrollMe(next: TimerState) {
@@ -206,6 +238,10 @@ const App: React.FC = () => {
   };
 
   const stageName = (timerState.stages[timerState.stageIndex] || { name: "Click start" }).name;
+  const progressSmoothening = 100;
+  const progress = Math.ceil(timerState.progress * progressSmoothening) / progressSmoothening;
+  const expectedProgressSpeed =
+    (timerState.stages[timerState.stageIndex] || {durationMs: 0}).durationMs / progressSmoothening / 1000;
 
   return (
     <MainContainer>
@@ -222,12 +258,17 @@ const App: React.FC = () => {
         <button onClick={handleReset}>Reset</button>
         <button onClick={handleNext} className="small">&gt;</button>
       </div>
-      <div className="timers">
-        <div className={
-          stageName === "Work" ? "work" :
-          stageName === "Rest" ? "rest" :
-          ""
-        }>{ stageName }</div>
+      <div className={ "timers" +
+          (stageName === "Work" ? " work" :
+          stageName === "Rest" ? " rest" :
+          "")}
+      >
+        <ProgressBar
+          id="progress-bar"
+          $progress={progress}
+          $expectedProgressSpeed={expectedProgressSpeed}
+        />
+        <div>{ stageName }</div>
         <div>{ formatDuration(timerState.remainingStageTimeMs) }</div>
       </div>
       <div className="stageListContainer">

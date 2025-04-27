@@ -25,6 +25,7 @@ export default class TimerState {
   reachedEnd = false;
   stages: Stage[];
   events: string[] = [];
+  progress: number = 0;
 
   constructor(stages: Stage[] = DEFAULT_STAGES) {
     this.stages = stages;
@@ -46,6 +47,13 @@ export default class TimerState {
         next.remainingStageTimeMs = 0;
         next.reachedEnd = true;
       }
+    }
+
+    if (next.stageIndex < stages.length) {
+      next.progress = next.remainingStageTimeMs / stages[next.stageIndex].durationMs;
+    }
+    else {
+      next.progress = 0;
     }
 
     next.events = [];
