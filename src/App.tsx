@@ -173,12 +173,36 @@ const App: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [timerState, setTimerState] = useState<TimerState>(new TimerState());
   const lastUpdatedRef = useRef<number>(0);
+  const [wakeLock, setWakeLock] = useState<WakeLockSentinel>();
 
   useEffect(() => {
     let timerId: NodeJS.Timeout;
+    let wakeLock: WakeLockSentinel;
+
+    async function acquireWakeLock() {
+      try {
+        wakeLock = await navigator.wakeLock.request("screen");
+        console.log("wakeLock acquired");
+        wakeLock.addEventListener("release", (event) => {
+          console.log("wakeLock lost");
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function releaseWakeLock() {
+      if (wakeLock) {
+        wakeLock.release();
+        console.log('wakeLock released');
+        wakeLock = null;
+      }
+    }
 
     if (isRunning) {
       console.log('Timer running');
+
+      acquireWakeLock();
 
       lastUpdatedRef.current = Date.now();
 
@@ -217,8 +241,12 @@ const App: React.FC = () => {
     }
 
     return () => {
-      console.log('Timer cleared');
-      clearInterval(timerId);
+      if (timerId) {
+        clearInterval(timerId);
+        console.log('Timer cleared');
+        timerId = null;
+      }
+      releaseWakeLock();
     };
   }, [isRunning]);
 
