@@ -129,7 +129,14 @@ const MainContainer = styled.div`
   }
 `;
 
-const ProgressBar = styled.div.attrs(({ $progress, $expectedProgressSpeed } ) => ({
+interface ProgressBarProps {
+  $progress: number;
+  $expectedProgressSpeed: number;
+}
+
+const ProgressBar = styled.div.attrs<ProgressBarProps>(({
+  $progress, $expectedProgressSpeed
+} ) => ({
   style: {
     width: `${Math.min(Math.max($progress, 0), 1) * 100}%`,
     'transition-duration': $progress === 1 ? "0.0s" : `${$expectedProgressSpeed}s`,
