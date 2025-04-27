@@ -122,9 +122,10 @@ const MainContainer = styled.div`
         "header stages"
         "version stages"
         "buttons stages"
-        "timers stages";
+        "timers stages"
+        ". stages";
       grid-template-columns: 350px 1fr;
-      grid-template-rows: auto auto auto 1fr;
+      grid-template-rows: auto auto auto auto 1fr;
     }
   }
 `;
