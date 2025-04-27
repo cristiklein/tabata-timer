@@ -139,7 +139,7 @@ const ProgressBar = styled.div.attrs<ProgressBarProps>(({
 } ) => ({
   style: {
     width: `${Math.min(Math.max($progress, 0), 1) * 100}%`,
-    'transition-duration': $progress === 1 ? "0.0s" : `${$expectedProgressSpeed}s`,
+    'transitionDuration': $progress === 1 ? "0.0s" : `${$expectedProgressSpeed}s`,
   },
 }))`
   position: absolute;
