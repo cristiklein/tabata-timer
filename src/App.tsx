@@ -247,7 +247,7 @@ const App: React.FC = () => {
             if (navigator.vibrate)
               navigator.vibrate([100, 200, 500]);
             finishAudio.play();
-            setNumStretched(numStretched+1);
+            setNumStretched((prev) => (prev+1));
           }
 
           return next;
