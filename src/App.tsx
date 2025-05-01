@@ -22,7 +22,8 @@ const MainContainer = styled.div`
     "version"
     "buttons"
     "timers"
-    "stages";
+    "stages"
+    "total";
   grid-template-rows: auto auto auto auto 1fr;
   gap: 10px;
   box-sizing: border-box;
@@ -115,6 +116,13 @@ const MainContainer = styled.div`
     }
   }
 
+  .total {
+    border-top: 1px solid black;
+    grid-area: total;
+    font-size: 32px;
+    text-align: center;
+  }
+
   /* Responsive Adjustments */
   @media (min-width: 640px) {
     & {
@@ -123,7 +131,7 @@ const MainContainer = styled.div`
         "version stages"
         "buttons stages"
         "timers stages"
-        ". stages";
+        "total stages";
       grid-template-columns: 350px 1fr;
       grid-template-rows: auto auto auto auto 1fr;
     }
@@ -173,6 +181,15 @@ const App: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [timerState, setTimerState] = useState<TimerState>(new TimerState());
   const lastUpdatedRef = useRef<number>(0);
+
+  const [numStretched, setNumStretched] = useState(() => {
+    const storedNumStretched = localStorage.getItem('numStretched');
+    return storedNumStretched ? parseInt(storedNumStretched, 10) : 0;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('numStretched', numStretched.toString());
+  }, [numStretched]);
 
   useEffect(() => {
     let timerId: NodeJS.Timeout;
@@ -230,6 +247,7 @@ const App: React.FC = () => {
             if (navigator.vibrate)
               navigator.vibrate([100, 200, 500]);
             finishAudio.play();
+            setNumStretched(numStretched+1);
           }
 
           return next;
@@ -319,6 +337,7 @@ const App: React.FC = () => {
         ))}
       </ul>
       </div>
+      <div className="total">You stretched {numStretched} times</div>
     </MainContainer>
   );
 }
