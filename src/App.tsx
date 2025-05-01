@@ -321,6 +321,7 @@ const App: React.FC = () => {
         />
         <div>{ stageName }</div>
         <div>{ formatDuration(timerState.remainingStageTimeMs) }</div>
+        <div>{ Math.max(timerState.stageIndex, 0) } / { timerState.stages.length }</div>
       </div>
       <div className="stageListContainer">
       <ul>
